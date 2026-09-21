@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>100 Day Challenge</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f4f4;color:#111}
+.wrap{max-width:700px;margin:auto;padding:18px}.top{background:#111;color:white;border-radius:20px;padding:22px;text-align:center}
+h1{margin:0 0 8px;font-size:28px}.progress{font-size:18px;margin:8px 0 14px}
+.bar{height:12px;background:#444;border-radius:20px;overflow:hidden}.fill{height:100%;width:0;background:#fff;transition:.2s}
+.day{background:white;margin:12px 0;padding:16px;border-radius:16px;box-shadow:0 2px 8px #0001}
+.day.done{background:#e9ffe9}.dayhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:bold}
+.task{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid #eee}
+input{width:20px;height:20px}button{border:0;border-radius:12px;padding:10px 14px;font-weight:bold;cursor:pointer}
+.reset{margin-top:14px;background:white;color:#111}.small{opacity:.75;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>🔥 100 Day Challenge</h1>
+    <div class="progress" id="count">সম্পন্ন: 0 / 100</div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <button class="reset" onclick="resetAll()">সব টিক মুছে দাও</button>
+  </div>
+  <div id="days"></div>
+</div>
+<script>
+const tasks=["🏋️ Exercise","🎥 ৩টা ভিডিও","📚 নতুন কিছু শেখা"];
+const key="challenge100_v2";
+let data=JSON.parse(localStorage.getItem(key)||"{}");
+const days=document.getElementById("days");
+
+for(let d=1;d<=100;d++){
+  const box=document.createElement("div"); box.className="day"; box.id="day"+d;
+  box.innerHTML=`<div class="dayhead"><span>Day ${d}</span><span class="small" id="status${d}"></span></div>`+
+    tasks.map((t,i)=>`<label class="task"><input type="checkbox" data-day="${d}" data-task="${i}"><span>${t}</span></label>`).join("");
+  days.appendChild(box);
+}
+document.querySelectorAll("input").forEach(cb=>{
+  const d=cb.dataset.day,t=cb.dataset.task;
+  cb.checked=!!(data[d]&&data[d][t]);
+  cb.addEventListener("change",()=>{
+    data[d]=data[d]||{};
+    data[d][t]=cb.checked;
+    localStorage.setItem(key,JSON.stringify(data));
+    update();
+  });
+});
+function update(){
+  let done=0;
+  for(let d=1;d<=100;d++){
+    const checks=[...document.querySelectorAll(`[data-day="${d}"]`)];
+    const all=checks.every(x=>x.checked);
+    document.getElementById("day"+d).classList.toggle("done",all);
+    document.getElementById("status"+d).textContent=all?"✓ সম্পন্ন":"";
+    if(all)done++;
+  }
+  document.getElementById("count").textContent=`সম্পন্ন: ${done} / 100`;
+  document.getElementById("fill").style.width=(done)+"%";
+}
+function resetAll(){
+  if(confirm("সব টিক মুছে ফেলবে?")){
+    data={};localStorage.removeItem(key);
+    document.querySelectorAll("input").forEach(x=>x.checked=false);
+    update();
+    scrollTo(0,0);
+  }
+}
+update();
+</script>
+</body>
+</html>
